@@ -8,7 +8,7 @@ import {  Message,
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/core"
-import { getFeed } from "./utils/getFeed";
+import { getFeed, getFeedFromAPI } from "./utils/getFeed";
 import { getUserByFid } from "./utils/geUserByFid";
 
 dotenv.config();
@@ -42,7 +42,7 @@ app.get("/user",async (req: express.Request, res: express.Response) => {
 });
 
 app.get("/feed", async (req: express.Request, res: express.Response) => {
-  const {channel, pageToken} = req.query;
+  const {channel, pageToken, api} = req.query;
   if(!channel){
     res.status(400).json({error: "No channel provided"});
   }
@@ -50,8 +50,13 @@ app.get("/feed", async (req: express.Request, res: express.Response) => {
     res.status(400).json({error: "No pageToken provided"});
   }
   try {
-    const simplifiedCasts = await getFeed(channel, pageToken);
-    res.json(simplifiedCasts);
+    if(api) {
+      const castsFromApi = await getFeedFromAPI(channel, pageToken)
+      return res.json(castsFromApi);
+    } else {
+      const castsFromHub = await getFeed(channel as string, pageToken as string);
+      return res.json(castsFromHub);
+    }    
   } catch (error) {
     res.status(500).json({error: error});
   }

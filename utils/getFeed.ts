@@ -3,7 +3,7 @@ import { getPfpFromFid } from "./getPfpFromFid";
 import { apiUrl, hubUrl } from "..";
 import { Cast, Embed } from "../types";
 
-export const getFeed = async (channel: any, nextPage: any) => {
+export const getFeedFromAPI = async (channel: any, nextPage: any) => {
     try {
       const result = await fetch(
         `${apiUrl}//farcaster/casts?channel=${channel}&pageLimit=200&pageToken=${nextPage}`, {
@@ -38,6 +38,44 @@ export const getFeed = async (channel: any, nextPage: any) => {
             timestamp: cast.timestamp,
             likes: cast?.reactions?.likes?.length || 0, 
             recasts: cast?.reactions?.recasts?.length || 0
+          };
+        }),
+      );
+      return simplifiedCasts;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
+
+  export const getFeed = async (channel: string, nextPage: string) => {
+    try {
+      const result = await fetch(
+        `${hubUrl}/castsByParent?url=${channel}&pageSize=20&reverse=true&pageToken=${nextPage}`,
+      );
+      const resultData = await result.json();
+      const pageToken = resultData.nextPageToken;
+      const casts = resultData.messages;
+      const simplifiedCasts = await Promise.all(
+        casts.map(async (cast: any) => {
+          const fname = await getFnameFromFid(cast.data.fid);
+          const pfp = await getPfpFromFid(cast.data.fid);
+          const { embedUrl, embedCast } = cast.data.castAddBody.embeds.reduce((acc: any, embed: any) => {
+            if (embed.url) {
+              acc.embedUrl.push(embed);
+            } else if (embed.castId) {
+              acc.embedCast.push(embed);
+            }
+            return acc;
+          }, { embedUrl: [], embedCast: [] });
+          return {
+            id: cast.hash,
+            castText: cast.data.castAddBody.text,
+            embedUrl: embedUrl,
+            embedCast: embedCast,
+            username: fname,
+            pfp: pfp,
+            timestamp: cast.data.timestamp,
           };
         }),
       );
