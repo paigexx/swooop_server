@@ -69,12 +69,12 @@ export const getAlgoFeedFromAPI = async () => {
 
     const users = followingData.data.users;
     users.sort((a: any, b: any) => b.follower_count - a.follower_count);
-    const top30 = users.slice(0, 30);
+    const top30 = users.slice(0, 20);
     let casts: any = [];
     await Promise.all(
       top30.map(async (user: any) => {
         const userCasts = await fetch(
-          `https://api.pinata.cloud/v3/farcaster/casts?pageSize=10&fid=${user.fid}`,
+          `https://api.pinata.cloud/v3/farcaster/casts?pageSize=5&fid=${user.fid}`,
           {
             headers: {
               Authorization: `Bearer ${process.env.PINATA_JWT}`,
@@ -118,7 +118,7 @@ export const getAlgoFeedFromAPI = async () => {
           };
         }),
     );
-    console.log(filteredCasts.length);
+
     filteredCasts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     return filteredCasts;
