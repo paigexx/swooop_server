@@ -65,8 +65,9 @@ app.get("/feed", async (req: express.Request, res: express.Response) => {
 });
 
 app.get("/algo", async (req: express.Request, res: express.Response) => {
+  const { fid, sample } = req.query;
   try {
-    const castsFromApi = await getAlgoFeedFromAPI();
+    const castsFromApi = await getAlgoFeedFromAPI(fid, sample);
     return res.json(castsFromApi);
   } catch (error) {
     res.status(500).json({ error: error });

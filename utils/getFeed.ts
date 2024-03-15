@@ -54,10 +54,10 @@ export const getFeedFromAPI = async (channel: any, nextPage: any) => {
   }
 };
 
-export const getAlgoFeedFromAPI = async () => {
+export const getAlgoFeedFromAPI = async (fid: any, sample: any) => {
   try {
     const celebFollowing = await fetch(
-      `https://api.pinata.cloud/v3/farcaster/users?following=true&pageSize=100&fid=3`,
+      `https://api.pinata.cloud/v3/farcaster/users?following=true&pageSize=${sample}&fid=${fid}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.PINATA_JWT}`,
